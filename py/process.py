@@ -5,7 +5,8 @@ import os
 
 ROOT_DIR = '/Users/oro/work/ga-psc'
 ACS_GDB = 'data/ACS_2016_5YR_TRACT_13_GEORGIA.gdb'
-ZIP_SHAPE = 'data/'
+ZIP_SHAPE = 'data/cdzipcounty.shp'
+GEOMETRY_LAYER = 'ACS_2016_5YR_TRACT_13_GEORGIA'
 
 
 def get_meta(acs_file, acs_layers):
@@ -51,10 +52,17 @@ def process_acs(exclude_meta=False, acs_layers=None):
         yield gpd.read_file(acs_file, driver='FileGDB', layer=acs_layer)
 
 
+def get_acs_geo():
+    acs_file = os.path.join(ROOT_DIR, ACS_GDB)
+    return gpd.read_file(acs_file, driver='FileGDB', layer=GEOMETRY_LAYER)
+
+
 # placeholder to analyze the zip code shapefile
 def process_zip():
+    zip_file = os.path.join(ROOT_DIR, ZIP_SHAPE)
+    zip_gdf = gpd.read_file(zip_file)
     print()
 
 
 if __name__ == '__main__':
-    process_acs()
+    process_zip()
