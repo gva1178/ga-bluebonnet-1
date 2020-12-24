@@ -13,20 +13,43 @@ tract_to_zipcode_df = pd.DataFrame()
 
 
 def get_tract_to_zipcode_df():
-    if tract_to_zipcode_df.empty():
+    '''
+    # tract_to_zipcode_df is globally defined -- why doesn't this work?
+    if tract_to_zipcode_df.empty:
         init() 
+    '''
+    if tract_to_zcta_mapping_dict == {} or zcta_to_zc_mapping_dict == {}:
+        pass
+        #init()
     # init calls 'write_tract_to_zipcode_df,' so it'll be defined now
     return tract_to_zipcode_df
 
 def write_tract_to_zipcode_df(tract_to_zcta, zcta_to_zip):
     tract_to_zipcode_df = tract_to_zcta.join(zcta_to_zip.set_index('ZCTA'), on='ZCTA', how='inner')
     tract_to_zipcode_df = tract_to_zipcode_df[['TRACT', 'ZIP_CODE']]
-    #print("FINAL DF: ")
+    print("FINAL DF: ")
     print(tract_to_zipcode_df.head())
+    if tract_to_zipcode_df.empty:
+        print("TRUE!!!   1\n\n")
+    else:
+        print("FALSE!!!  1\n\n")
+    tract_to_zipcode_df.reset_index(drop=True, inplace=True)
+    print(tract_to_zipcode_df.head())
+    tract_to_zipcode_df.to_csv('tract_to_zip_out3.csv', index=False)
+    csvFile = pd.read_csv('tract_to_zip_out3.csv', dtype='str')
+    print("FILE!!")
+    print(csvFile.head())
+    return
 
-def write_tract_to_zipcode_CSV(tract_to_zcta, zcta_to_zip):
-    if tract_to_zipcode_df.empty():
-        init()
+def write_tract_to_zipcode_CSV():
+    '''
+    # tract_to_zipcode_df is globally defined -- why doesn't this work?
+    if tract_to_zipcode_df.empty:
+        init() 
+    '''
+    if tract_to_zcta_mapping_dict == {} or zcta_to_zc_mapping_dict == {}:
+        pass
+        #init()
     
     csv_out = tract_to_zipcode_df.to_csv('tract_to_zip_out.csv')
     return
@@ -87,35 +110,22 @@ def build_zcta_to_zc_dict():
 def init():
     tract_to_zcta_mapping_df = build_tract_to_zcta_dict()
     zcta_to_zc_mapping_df = build_zcta_to_zc_dict()
+    print("HERE 2")
     write_tract_to_zipcode_df(tract_to_zcta_mapping_df, zcta_to_zc_mapping_df)
-    
+    print("HERE 3")
+    if tract_to_zipcode_df.empty:
+        print("TRUE!!!   2\n\n")
+    else:
+        print("FALSE!!!  2\n\n")
+    write_tract_to_zipcode_CSV()
+    print("HERE 4")
     return
-
-    '''
-    #converts ZCTA5 and TRACT columns to string format so leading 0s are not omitted
-    list_string_cols = ['ZCTA5', 'TRACT']
-    dict_dtypes = {x : 'str' for x in list_string_cols}
-    
-    zipcode_mapping_df = pd.read_csv(zc_to_tract_path, dtype=dict_dtypes)
-    print(zipcode_mapping_df.head())
-    zipcode_mapping_df = zipcode_mapping_df[['TRACT', 'ZCTA5']]
-    print(zipcode_mapping_df.head())
-    zipcode_mapping_df_trunc = zipcode_mapping_df.head()
-    zipcode_mapping_dict_df = zipcode_mapping_df_trunc.to_dict('split')
-    zipcode_mapping_dict = zipcode_mapping_dict_df['data']
-    print("LENGTH: " + str(len(zipcode_mapping_dict)))
-    print(zipcode_mapping_dict)
-    zipcode_mapping_dict = {pair[0]: pair[1] for pair in zipcode_mapping_dict}
-    print(zipcode_mapping_dict)
-    #newDict = {key: zipcode_mapping_dict[key] for key in list(zipcode_mapping_dict)[1:5]}
-    #dictFewVals = [v for v in zipcode_mapping_dict.values()]
-    #print(dictFewVals[0:5])
-    #print("LEN: " + str(len(dictFewVals)))
-    '''
 
 # build database
 def census_tracts_to_zipcode():
+    print("HERE 1")
     init()
+    print("HERE 5")
     return
 
 
