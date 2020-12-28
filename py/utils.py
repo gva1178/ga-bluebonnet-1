@@ -44,4 +44,11 @@ def remove_margin_of_error(columns):
     return cols, removed_cols
 
 
+def get_margin_of_error_list(df_columns):
+    removed_cols = []
+    for col in df_columns:
+        if 'Margin of Error' in col:
+            removed_cols.append(col)
+    return removed_cols
+
 

@@ -3,7 +3,8 @@ import geopandas as gpd
 import os
 
 
-ROOT_DIR = '/Users/oro/work/ga-psc'
+#ROOT_DIR = '/Users/oro/work/ga-psc'
+ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
 ACS_GDB = 'data/ACS_2016_5YR_TRACT_13_GEORGIA.gdb'
 ZIP_SHAPE = 'data/cdzipcounty.shp'
 GEOMETRY_LAYER = 'ACS_2016_5YR_TRACT_13_GEORGIA'
@@ -22,6 +23,7 @@ def get_counts(acs_file, acs_layers):
 def process_meta():
     acs_file = os.path.join(ROOT_DIR, ACS_GDB)
     acs_layers = fiona.listlayers(acs_file)
+    print("Layers: " + (str(acs_layers)))
     df_meta = get_meta(acs_file, acs_layers)
     df_counts = get_counts(acs_file, acs_layers)
     return df_meta, df_counts
