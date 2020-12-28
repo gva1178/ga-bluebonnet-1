@@ -28,7 +28,7 @@ def selectLayer(layerOptions, cleanLayerOptions):
         cleanResponse = rawResponse.lower().replace(" ", "")
         if(cleanResponse == ""): cleanResponse = "race"
         if(cleanResponse in cleanLayerOptions):
-            print("You chose " + cleanResponse + "!")
+            print("You chose \"" + cleanResponse + ".\" Loading options: \n")
             return cleanResponse
         print("Input error. Please try again.\n")
 
@@ -61,6 +61,7 @@ def removeExtraneousRaceCols(layerDF):
     removedColumns = []
     preservedColumns = (
         ["GEOID",
+        "RACE: Total: Total population -- (Estimate)",
         "WHITE ALONE OR IN COMBINATION WITH ONE OR MORE OTHER RACES: Total: White alone or in combination with one or more other races -- (Estimate)",
         "BLACK OR AFRICAN AMERICAN ALONE OR IN COMBINATION WITH ONE OR MORE OTHER RACES: Total: Black or African American alone or in combination with one or more other races -- (Estimate)",
         "AMERICAN INDIAN AND ALASKA NATIVE ALONE OR IN COMBINATION WITH ONE OR MORE OTHER RACES: Total: People who are American Indian or Alaska Native alone or in combination with one or more other races -- (Estimate)",
@@ -95,11 +96,9 @@ def getPopulationByCensusTract(acs_meta, acs_counts):
     return acs_counts_trunc
 
 
-def convertValuesToPercentages(acs_meta, acs_counts, layerDF):
-    acs_counts_trunc = getPopulationByCensusTract(acs_meta, acs_counts)
-    layerDF = layerDF.merge(acs_counts_trunc, on="GEOID", how="inner")
-    print(layerDF.columns)
-    #now convert raw values to percentages
+def addCensusTractPopulationColumn(acs_meta, acs_counts, layerDF):
+    populationByTractDF = getPopulationByCensusTract(acs_meta, acs_counts)
+    layerDF = layerDF.merge(populationByTractDF, on="GEOID", how='inner')
     return layerDF
 
 
@@ -108,6 +107,82 @@ def addZipCodeColumn(layerDF):
     zipCodeDF.columns = ["GEOID", "ZIPCODE"]
     layerDF["GEOID"] = [tractNum[-6:] for tractNum in layerDF["GEOID"]]
     layerDF = layerDF.merge(zipCodeDF, on="GEOID", how="inner")
+    return layerDF
+
+
+def collapseRowsOnZipCodeColumn(layerDF):
+    layerDF = layerDF.set_index('GEOID')
+    layerDF = layerDF.groupby(["ZIPCODE"], axis=0).sum()
+    return layerDF
+
+
+def convertValuesToPercentages(acs_meta, acs_counts, layerDF):
+    #acs_counts_trunc = getPopulationByCensusTract(acs_meta, acs_counts)
+    #layerDF = layerDF.merge(acs_counts_trunc, on="GEOID", how="inner")
+    totalPopColumn = layerDF.pop("RACE: Total: Total population -- (Estimate)")
+    layerDF = layerDF.divide(totalPopColumn, axis='index')
+    return layerDF
+
+
+def generatePromptOptions(layerName, layerOptions):
+    promptOptions = []
+    if (layerName == layerOptions[0]): #Race
+        promptOptions += ["White", "Black", "Native American", "Asian", "Native Hawaiian", "Other"]
+    elif (layerName == layerOptions[1]): #Hispanic/Latino
+        print(layerName + "Not implemented yet")
+        pass
+    elif (layerName == layerOptions[2]): #Healthcare
+        print(layerName + "Not implemented yet")
+        pass
+    elif (layerName == layerOptions[3]): #Food stamps
+        print(layerName + "Not implemented yet")
+        pass
+    else: # Error -- need to account for new layer
+        print("Error: Layer " + layerName + "not accounted for in find_top_n.py/generatePromptOptions")
+
+    return promptOptions
+
+
+def findTop10Zips(columnNum, layerDF):
+    columnToSort = [layerDF.columns[columnNum]]
+    layerDF = layerDF.sort_values(by=columnToSort, axis="index", ascending=False)
+    #layerDF.columns = ["White", "Black", "Native American", "Asian", "Native Hawaiian", "Other"]
+    #print(layerDF.head())
+    top10Zips = layerDF.index.values[:10]
+    percentages = layerDF[columnToSort].values[:10]
+    percentagesFlattened = [percent[0] for percent in percentages]
+    top10Zips = list(zip(top10Zips, percentagesFlattened))
+    return top10Zips
+
+
+def processResponse(response, cleanPromptOptions, layer, layerDF):
+    retryBool = True
+    for index, value in enumerate(cleanPromptOptions):
+        if response == value:
+            retryBool = False
+            top10Zips = findTop10Zips(index, layerDF)
+            printString = ("The top 10 zips for \"" + layer + "\"=\"" + response + "\" are:\n")
+            for zipCode in top10Zips:
+                printString += ("\t" + str(zipCode[0]) + " (percent = " + str(zipCode[1]) + ")\n")
+            print(printString)
+        elif response == "quit":
+            retryBool = False 
+
+    return retryBool
+
+
+def sortZipCodesByDesiredColumn(layer, cleanLayerOptions, layerDF):
+    promptOptions = generatePromptOptions(layer, cleanLayerOptions)
+    cleanPromptOptions = [option.lower().strip() for option in promptOptions]
+    prompt = ("Please select the column for which you'd like to return the top 10 zip codes:\n")
+    for option in promptOptions:
+        prompt += ("\t" + option + "\n")
+    response = ""
+    while(response != "quit"):
+        response = input(prompt).lower().strip()
+        retryBool = processResponse(response, cleanPromptOptions, layer, layerDF)
+        if (retryBool): print("Input error. Please try again.\n")
+
     return layerDF
 
 
@@ -120,13 +195,13 @@ def find_top_n():
     layerDF = next(layer_df_generator)
     layerDF = convertColumnsToFullName(acs_meta, layerDF)
     layerDF = dropUnwantedColumns(layer, cleanLayerOptions, layerDF)
-    print(layerDF.to_numpy())
-    layerDF = convertValuesToPercentages(acs_meta, acs_counts, layerDF)
+    #layerDF = addCensusTractPopulationColumn(acs_meta, acs_counts, layerDF) # The population numbers in the counts layer don't seem to make sense (too low)
     layerDF = addZipCodeColumn(layerDF)
-    print(layerDF.to_numpy())
-
+    layerDF = collapseRowsOnZipCodeColumn(layerDF)
+    layerDF = convertValuesToPercentages(acs_meta, acs_counts, layerDF)
+    layerDF = sortZipCodesByDesiredColumn(layer, cleanLayerOptions, layerDF)
     
-    #separate method for differnt prompts -- e.g. choose race, choose healthcare status...
+    #separate method for different prompts -- e.g. choose race, choose healthcare status...
 
 if __name__ == '__main__':
     find_top_n()
