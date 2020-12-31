@@ -65,9 +65,46 @@ def get_zcta_geo():
     return gpd.read_file(zcta_file, driver='FileGDB', )
 
 
+
+# placeholder to analyze the zip code shapefile
+def process_zip():
+    zip_file = os.path.join(ROOT_DIR, ZIP_SHAPE)
+    return gpd.read_file(zip_file)
+
+
+
+
+def join_csvs():
+    county_file = os.path.join(DATA_DIR, COUNTIES)
+    county_df = gpd.read_file(county_file)
+    county_to_fips = load_fips()
+    county_df['COUNTY_CODE'] = county_df['County'].apply(lambda x: county_to_fips[x])
+    race_file = os.path.join(CSV_DIR, RACE)
+    ancestry_file = os.path.join(CSV_DIR, ANCESTRY)
+    stuff_file = os.path.join(CSV_DIR, STUFF)
+
+    merged = join_acses([race_file, ancestry_file, stuff_file], county_to_fips)
+    dbl_merged = county_df.merge(merged, on='COUNTY_CODE', how='outer')
+    dbl_merged.to_csv('stuff_all.csv')
+
+
+def join_acses(l, county_to_fips):
+    acs = l[0]
+    acs = gpd.read_file(acs)
+    acs['COUNTY_CODE'] = acs['GEOID'].apply(lambda x: x[7:][:5])
+    for layer in l[1:]:
+        new_layer = gpd.read_file(layer)
+        if 'stuff' not in layer:
+            new_layer['COUNTY_CODE'] = new_layer['GEOID'].apply(lambda x: x[7:][:5])
+        else:
+            new_layer['COUNTY_CODE'] = new_layer['cdczipnov3_Intersect1.County_1'].apply(lambda x: county_to_fips[x])
+        acs = acs.merge(new_layer, on='COUNTY_CODE', how='outer')
+    return acs
+
+
 def load_fips():
     county_to_fips = {}
-    ctf = os.path.join(ROOT_DIR, FIPS)
+    ctf = os.path.join(DATA_DIR, FIPS)
     with open(ctf) as ctf_file:
         for line in ctf_file:
             code, county, state = line.split('\t')
@@ -75,10 +112,14 @@ def load_fips():
     return county_to_fips
 
 
-# placeholder to analyze the zip code shapefile
-def process_zip():
-    zip_file = os.path.join(ROOT_DIR, ZIP_SHAPE)
-    return gpd.read_file(zip_file)
+def join_csv_with_county(csv_file, county_df, county_to_fips):
+    acs = gpd.read_file(csv_file)
+    if 'stuff' not in csv_file:
+        acs['COUNTY_CODE'] = acs['GEOID'].apply(lambda x: x[7:][:5])
+    else:
+        acs['COUNTY_CODE'] = acs['cdczipnov3_Intersect1.County_1'].apply(lambda x: county_to_fips[x])
+    merged = county_df.merge(acs, on='COUNTY_CODE', how='outer')
+    return merged
 
 
 if __name__ == '__main__':
