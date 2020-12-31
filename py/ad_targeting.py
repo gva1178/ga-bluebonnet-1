@@ -141,7 +141,8 @@ def write_txtFile_with_column_options(layer, layer_df):
 def build_ad_targets_from_columns(selectedLayers, selectedColumnsMap, acs_meta, acs_counts):
     
     # startingDF; to be built over time by merging
-    target_scores_DF = gpd.GeoDataFrame(addZipCodeColumn(acs_counts["GEOID"])) #RN this is the full GEOID, not just tractNum
+    print(acs_counts.columns)
+    target_scores_DF = gpd.GeoDataFrame(addZipCodeColumn(acs_counts)["GEOID"])
 
     for index, layer_df in enumerate(process.process_acs(acs_layers=selectedLayers)):
         layer = selectedLayers[index]
@@ -162,22 +163,23 @@ def build_ad_targets_from_columns(selectedLayers, selectedColumnsMap, acs_meta, 
                 # convert column entries to percentiles
                 # make new dataframe, columnDF, with only zip codes and the current column
                 #target_scores_DF.merge(columnDF, on="ZIPCODE")
+                pass
 
         #layer_df = sortZipCodesByDesiredColumn(layer, cleanLayerOptions, layer_df)
         # ^ Use this to sort target_scores_DF by overall scores
 
     return target_scores_DF
-    
+
 
 def build_ad_targets():
     acs_meta, acs_counts = process.process_meta()
     enviro_justice_layers = ["X02_RACE", "X17_POVERTY", "X22_FOOD_STAMPS", "X27_HEALTH_INSURANCE"]
     # The columns in this map are placeholders until we get more clarity on the exact columns we want to include
     # we're mapping from layer names to tuples of columnn names, so if we're only going to use one column from a layer, still make it a tuple with None as the second item -- e.g. ("selectedColumn", None)
-    enviro_justice_cols = {"X02_RACE" : ("RACE: Total: Total population -- (Estimate)", "RACE: White alone: Total population -- (Estimate)"), 
-                            "X17_POVERTY" : ("POVERTY STATUS IN THE PAST 12 MONTHS BY SEX BY AGE: Total: Population for whom poverty status is determined -- (Estimate)", None), 
-                            "X22_FOOD_STAMPS" : ("RECEIPT OF FOOD STAMPS/SNAP IN THE PAST 12 MONTHS BY POVERTY STATUS IN THE PAST 12 MONTHS FOR HOUSEHOLDS: Total: Households -- (Estimate)", "Healthcare"), 
-                            "X27_HEALTH_INSURANCE" : ("PRIVATE HEALTH INSURANCE BY RATIO OF INCOME TO POVERTY LEVEL IN THE PAST 12 MONTHS BY AGE: Total: Civilian noninstitutionalized population for whom poverty status is determined -- (Estimate)", None)}
+    enviro_justice_cols = {"X02_RACE" : ("GEOID", "RACE: Total: Total population -- (Estimate)", "RACE: White alone: Total population -- (Estimate)"), 
+                            "X17_POVERTY" : ("GEOID", "POVERTY STATUS IN THE PAST 12 MONTHS BY SEX BY AGE: Total: Population for whom poverty status is determined -- (Estimate)", None), 
+                            "X22_FOOD_STAMPS" : ("GEOID", "RECEIPT OF FOOD STAMPS/SNAP IN THE PAST 12 MONTHS BY POVERTY STATUS IN THE PAST 12 MONTHS FOR HOUSEHOLDS: Total: Households -- (Estimate)", "Healthcare"), 
+                            "X27_HEALTH_INSURANCE" : ("GEOID", "PRIVATE HEALTH INSURANCE BY RATIO OF INCOME TO POVERTY LEVEL IN THE PAST 12 MONTHS BY AGE: Total: Civilian noninstitutionalized population for whom poverty status is determined -- (Estimate)", None)}
 
     target_scores_DF = build_ad_targets_from_columns(enviro_justice_layers, enviro_justice_cols, acs_meta, acs_counts)
     #target_scores_DF.to_csv("enviro_justice_scores.csv")
