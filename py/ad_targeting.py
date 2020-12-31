@@ -141,12 +141,10 @@ def write_txtFile_with_column_options(layer, layer_df):
 def build_ad_targets_from_columns(selectedLayers, selectedColumnsMap, acs_meta, acs_counts):
     
     # startingDF; to be built over time by merging relevant columns into it
-    print(acs_counts.columns)
     target_scores_DF = gpd.GeoDataFrame(addZipCodeColumn(acs_counts)["GEOID"])
 
     for index, layer_df in enumerate(process.process_acs(acs_layers=selectedLayers)):
         layer = selectedLayers[index]
-        print(layer)
         selectedColumns = selectedColumnsMap[layer]
         layer_df = convertColumnsToFullName(acs_meta, layer_df)
         #write_txtFile_with_column_options(layer, layer_df) #helpful for building selectedColumnsMap (i.e. choosing which columns to prioritize)
