@@ -140,7 +140,7 @@ def write_txtFile_with_column_options(layer, layer_df):
 
 def build_ad_targets_from_columns(selectedLayers, selectedColumnsMap, acs_meta, acs_counts):
     
-    # startingDF; to be built over time by merging
+    # startingDF; to be built over time by merging relevant columns into it
     print(acs_counts.columns)
     target_scores_DF = gpd.GeoDataFrame(addZipCodeColumn(acs_counts)["GEOID"])
 
@@ -158,15 +158,15 @@ def build_ad_targets_from_columns(selectedLayers, selectedColumnsMap, acs_meta, 
         layer_df = convertValuesToPercentages(acs_meta, acs_counts, layer_df)
 
         for column in selectedColumns:
-            # make sure to make sure it's not None, since we're padding one-element tuples with None
+            # make sure it's not None, since we're padding one-element tuples with None
             if column != None:
-                # convert column entries to percentiles
-                # make new dataframe, columnDF, with only zip codes and the current column
-                #target_scores_DF.merge(columnDF, on="ZIPCODE")
+                # TODO: convert column entries to percentiles
+                # TODO: make new dataframe, columnDF, with only zip codes and the current column
+                # target_scores_DF.merge(columnDF, on="ZIPCODE")
                 pass
 
         #layer_df = sortZipCodesByDesiredColumn(layer, cleanLayerOptions, layer_df)
-        # ^ Use this to sort target_scores_DF by overall scores
+        # TODO: Leverage the above method to sort target_scores_DF by overall scores (need to make a 'percentile sum' column)
 
     return target_scores_DF
 
