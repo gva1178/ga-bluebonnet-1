@@ -22,6 +22,15 @@ def get_col_map_to_names(df_meta, col_names):
     return cols
 
 
+def get_name_list_from_cols(df_meta, col_names):
+    cols = []
+    for col in col_names:
+        if col == 'GEOID' or col == 'geometry':
+            continue
+        meta = df_meta.loc[df_meta['Short_Name'] == col]
+        cols.apped(meta.at[meta.index.values[0], 'Full_Name'])
+    return cols
+
 def get_full_name_map_from_cols(df_meta, col_names):
     cols = {}
     for col in col_names:
