@@ -9,7 +9,7 @@ ACS_GDB = 'data/ACS_2016_5YR_TRACT_13_GEORGIA.gdb'
 ZIP_SHAPE = 'data/shp/gazip.shp'
 GEOMETRY_LAYER = 'ACS_2016_5YR_TRACT_13_GEORGIA'
 ZCTA_GEO = 'data/cb_2016_us_zcta510_500k'
-
+FIPS = 'data/txt/FIPS.txt'
 
 def get_meta(acs_file, acs_layers):
     acs_meta = acs_layers.pop(acs_layers.index('TRACT_METADATA_2016'))
@@ -63,6 +63,16 @@ def get_acs_geo():
 def get_zcta_geo():
     zcta_file = os.path.join(ROOT_DIR, ZCTA_GEO)
     return gpd.read_file(zcta_file, driver='FileGDB', )
+
+
+def load_fips():
+    county_to_fips = {}
+    ctf = os.path.join(ROOT_DIR, FIPS)
+    with open(ctf) as ctf_file:
+        for line in ctf_file:
+            code, county, state = line.split('\t')
+            county_to_fips[county] = code
+    return county_to_fips
 
 
 # placeholder to analyze the zip code shapefile
