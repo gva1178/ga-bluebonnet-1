@@ -1,8 +1,8 @@
 
 import pandas as pd
 import os
-
-ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
+ROOT_DIR = '/Users/oro/work/ga-psc'
+# ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
 TRACT_TO_ZCTA_DATA = 'data/zcta-to-census-tract-201222.txt'
 ZCTA_TO_ZIP_DATA = 'data/GA_zcta_to_zc_map.csv'
 

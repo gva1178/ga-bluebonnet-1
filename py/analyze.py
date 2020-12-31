@@ -65,7 +65,7 @@ def top_n_tracts(acs_meta, acs_counts, gdf, acs_geo, n):
     for col, col_p in cols:
         gdf.eval(f'{col_p} = {col} / {count_col}', inplace=True)
 
-    gdf['GEOID'] = gdf['GEOID'].apply(lambda x: x[7:])
+    gdf['GEOID'] = gdf['GEOID'].apply(lambda x: x[5:])
     merged = gdf.merge(acs_geo, on='GEOID', how='outer')
     cols_to_name = utils.get_col_map_to_names(acs_meta, [col[0] for col in cols])
     new_cols = merged.columns.values

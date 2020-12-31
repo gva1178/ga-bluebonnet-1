@@ -68,6 +68,12 @@ def collapseRowsOnZipCodeColumn(layerDF):
     return layerDF
 
 
+def collapse_on_column(df, col):
+    df.set_index('GEOID', inplace=True)
+    return df.groupby([col], axis=0).first()
+
+
+
 def convertValuesToPercentages(acs_meta, acs_counts, layerDF):
     #acs_counts_trunc = getPopulationByCensusTract(acs_meta, acs_counts)
     #layerDF = layerDF.merge(acs_counts_trunc, on="GEOID", how="inner")
@@ -143,6 +149,10 @@ NON_SUMMABLE = {'geometry', 'ZIPCODE', 'GEOID', None}
 
 
 def cols_to_percentiles(df, inplace=True):
+    if 'RACE: White alone: Total population -- (Estimate)' in df.columns:
+        df['RACE: Non White alone: Total population -- (Estimate)'] = df['RACE: Total: Total population -- (Estimate)'] - df['RACE: White alone: Total population -- (Estimate)']
+        df.drop(columns=['RACE: White alone: Total population -- (Estimate)'], inplace=True)
+
     for col in df.columns:
         if col not in NON_SUMMABLE:
             len = df[col].size-1
@@ -179,9 +189,10 @@ def build_ad_targets_from_columns(selectedLayers, selectedColumnsMap, column_wei
         #layer_df = addCensusTractPopulationColumn(acs_meta, acs_counts, layer_df) # The population numbers in the counts layer don't seem to make sense (too low)
         # can use "total" column for the given layer to get percentages
         # layer_df = convertValuesToPercentages(acs_meta, acs_counts, layer_df)
-        cols_to_percentiles(layer_df)
         print('merge', layer)
         scores_df = scores_df.merge(layer_df, on='ZIPCODE', how='outer')
+
+    cols_to_percentiles(scores_df)
 
     return scores_df
 
@@ -224,5 +235,48 @@ def build_ad_targets(export=False):
 
     return scores
 
+
+def map_ad_targets(scores):
+    # first merge,
+    zip = load_zip()
+    scores_zip = zip.merge(scores, on='ZIPCODE', how='outer')
+    scores_zip = scores_zip.groupby(['GEOID'], axis=0).first()
+    geo = process.get_acs_geo()
+    geo['GEOID'] = geo['GEOID'].apply(lambda x: x[5:])
+    scores_zip_geo = scores_zip.merge(geo, on='GEOID', how='outer')
+    scores_zip = collapse_on_column(scores_zip, 'GEOID')
+    scores_and_geo_and_zip_new = scores_zip_geo.columns.values
+    scores_and_geo_and_zip_new[scores_and_geo_and_zip_new == 'geometry_y'] = 'geometry'
+    scores_zip_geo.columns = scores_and_geo_and_zip_new
+    print('second')
+    scores_and_geo_and_zip = gpd.GeoDataFrame(scores_zip_geo)  #just in case sometimes it likes it being recast ???
+    scores_and_geo_and_zip['ad_score_scaled'] = scores_zip_geo['ad_score_scaled'].apply(lambda x: float(x))
+
+    # then map!
+    color_min = 0
+    color_max = scores_and_geo_and_zip['ad_score_scaled'].max()
+
+    fig, ax = plt.subplots(1, figsize=(30, 10))
+    ax.axis('off')
+    ax.set_title('AD SCORE, SCALED', fontdict={'fontsize': '25', 'fontweight': '3'})
+    ax.annotate('Source: ACS DATA', xy=(0.6, .05),
+                xycoords='figure fraction', fontsize=12, color='#555555')
+    sm = plt.cm.ScalarMappable(cmap='Blues', norm=plt.Normalize(vmin=color_min, vmax=color_max))
+    sm.set_array([])
+    fig.colorbar(sm)
+    scores_and_geo_and_zip.plot(column='ad_score_scaled', cmap='Blues', linewidth=0.8, ax=ax, edgecolor='0.8')
+    print()
+    plt.close(fig)
+
+
+
+def load_cached_ad_targets(path):
+    return gpd.read_file(path, driver='FileGDB')
+
+
+
+
 if __name__ == '__main__':
-    build_ad_targets(export=True)
+    scores = build_ad_targets(export=True)
+    # scores = load_cachedD_ad_targets('ad_scores.csv')  # just gets cached version to run faster
+    # map_ad_targets(scores)

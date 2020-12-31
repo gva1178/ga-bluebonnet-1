@@ -6,8 +6,9 @@ import os
 ROOT_DIR = '/Users/oro/work/ga-psc'
 # ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
 ACS_GDB = 'data/ACS_2016_5YR_TRACT_13_GEORGIA.gdb'
-ZIP_SHAPE = 'data/cdzipcounty.shp'
+ZIP_SHAPE = 'data/shp/gazip.shp'
 GEOMETRY_LAYER = 'ACS_2016_5YR_TRACT_13_GEORGIA'
+ZCTA_GEO = 'data/cb_2016_us_zcta510_500k'
 
 
 def get_meta(acs_file, acs_layers):
@@ -59,12 +60,17 @@ def get_acs_geo():
     return gpd.read_file(acs_file, driver='FileGDB', layer=GEOMETRY_LAYER)
 
 
+def get_zcta_geo():
+    zcta_file = os.path.join(ROOT_DIR, ZCTA_GEO)
+    return gpd.read_file(zcta_file, driver='FileGDB', )
+
+
 # placeholder to analyze the zip code shapefile
 def process_zip():
     zip_file = os.path.join(ROOT_DIR, ZIP_SHAPE)
-    zip_gdf = gpd.read_file(zip_file)
-    print()
+    return gpd.read_file(zip_file)
 
 
 if __name__ == '__main__':
-    process_zip()
+    a = get_zcta_geo()
+    print(a.head())
