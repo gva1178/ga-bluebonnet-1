@@ -5,7 +5,7 @@ import os
 
 ROOT_DIR = '/Users/oro/work/ga-psc'
 CSV_DIR = '/Users/oro/work/ga-psc/data/csv'
-# ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
+#ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
 ACS_GDB = 'data/ACS_2016_5YR_TRACT_13_GEORGIA.gdb'
 ZIP_SHAPE = 'data/shp/gazip.shp'
 GEOMETRY_LAYER = 'ACS_2016_5YR_TRACT_13_GEORGIA'

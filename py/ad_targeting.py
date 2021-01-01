@@ -5,7 +5,7 @@ import os
 import pprint
 import process
 import matplotlib.pyplot as plt
-import censusToZip
+import new_tractToZip
 import sys
 from sklearn import preprocessing
 
@@ -57,7 +57,7 @@ def addCensusTractPopulationColumn(acs_meta, acs_counts, layerDF):
 
 
 def addZipCodeColumn(layerDF, zip_df):
-    layerDF["GEOID"] = [tractNum[-6:] for tractNum in layerDF["GEOID"]]
+    layerDF["GEOID"] = [tractNum[-11:] for tractNum in layerDF["GEOID"]]
     layerDF = layerDF.merge(zip_df, on="GEOID", how="inner")
     return layerDF
 
@@ -158,7 +158,7 @@ def cols_to_percentiles(df, inplace=True):
 
 
 def load_zip():
-    zipCodeDF = pd.read_csv('tract_to_zip_out3.csv', dtype=str)
+    zipCodeDF = pd.read_csv('tract_to_zip_out.csv', dtype=str)
     zipCodeDF.columns = ["GEOID", "ZIPCODE"]
     return zipCodeDF
 
@@ -282,7 +282,6 @@ def col_rename(scores,meta, cols):
 
 
 
-
 def map_ad_targets(scores):
     # first merge,
     zip = load_zip()
@@ -324,6 +323,6 @@ def load_cached_ad_targets(path):
 
 
 if __name__ == '__main__':
-    scores = build_ad_targets(export=True, cache=True)
+    scores = build_ad_targets(export=True, cache=False)
     # scores = load_cached_ad_targets('ad_scores.csv')  # just gets cached version to run faster
     # map_ad_targets(scores)

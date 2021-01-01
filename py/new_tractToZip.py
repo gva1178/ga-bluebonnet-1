@@ -2,8 +2,8 @@ import pandas as pd
 import geopandas as gpd
 import os
 
-#ROOT_DIR = '/Users/oro/work/ga-psc'
-ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
+ROOT_DIR = '/Users/oro/work/ga-psc'
+#ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
 TRACT_TO_ZCTA_DATA = 'data/210101_tract_to_zip_GA.csv'
 ACS_GDB = 'data/ACS_2016_5YR_TRACT_13_GEORGIA.gdb'
 
