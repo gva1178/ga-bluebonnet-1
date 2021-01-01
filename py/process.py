@@ -4,12 +4,20 @@ import os
 
 
 ROOT_DIR = '/Users/oro/work/ga-psc'
+CSV_DIR = '/Users/oro/work/ga-psc/data/csv'
 # ROOT_DIR = '/Users/gabrielvoorhis-allen/CSProjects/Bluebonnet/ga-psc'
 ACS_GDB = 'data/ACS_2016_5YR_TRACT_13_GEORGIA.gdb'
 ZIP_SHAPE = 'data/shp/gazip.shp'
 GEOMETRY_LAYER = 'ACS_2016_5YR_TRACT_13_GEORGIA'
 ZCTA_GEO = 'data/cb_2016_us_zcta510_500k'
 FIPS = 'data/txt/FIPS.txt'
+STUFF = 'all the data - stuff.csv'
+RACE = 'all the data - Race.csv'
+ANCESTRY = 'all the data - Ancestry.csv'
+COUNTIES = 'csv/GA counties summary.csv'
+FIPS = 'txt/fips.txt'
+TRACT_TO_ZIP = 'csv/tract_to_zip_out3.csv'
+DATA_DIR = '/Users/oro/work/ga-psc/data'
 
 def get_meta(acs_file, acs_layers):
     acs_meta = acs_layers.pop(acs_layers.index('TRACT_METADATA_2016'))
