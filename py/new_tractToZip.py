@@ -13,7 +13,6 @@ def build_national_tract_to_zip_df():
     national_tract_to_zip_path = os.path.join(ROOT_DIR, TRACT_TO_ZCTA_DATA)
     national_tract_to_zip_df = pd.read_csv(national_tract_to_zip_path, dtype='str')
     national_tract_to_zip_df = national_tract_to_zip_df[["TRACT", "ZIP"]]
-    #print(national_tract_to_zip_df.head())
     return national_tract_to_zip_df
 
 def build_georgia_tracts_df():
@@ -23,7 +22,6 @@ def build_georgia_tracts_df():
     georgia_tracts_df = [geoID[-11:] for geoID in georgia_tracts_df]
     georgia_tracts_df = gpd.GeoDataFrame(georgia_tracts_df)
     georgia_tracts_df.columns = ["TRACT"]
-    #print(georgia_tracts_df.head())
     return georgia_tracts_df
 
 
@@ -31,8 +29,11 @@ def mapTractsToZipCodes():
     national_tract_to_zip_df = build_national_tract_to_zip_df()
     georgia_tracts_df = build_georgia_tracts_df()
     georgia_tracts_to_zip_df = national_tract_to_zip_df.merge(georgia_tracts_df, how='inner')
+    #georgia_tracts_merged = georgia_tracts_to_zip_df["TRACT"]
+    #georgia_tracts_df_tract_column = georgia_tracts_df["TRACT"]
+    #diff = set(georgia_tracts_df_tract_column) - set(georgia_tracts_merged)
+    #print(diff)
     georgia_tracts_to_zip_df.set_index("TRACT", inplace=True)
-    #print(georgia_tracts_to_zip_df.head())
     georgia_tracts_to_zip_df.to_csv("tract_to_zip_out.csv")
     return
 
